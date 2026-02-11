@@ -13,7 +13,8 @@ let appState = {
         useTab: true,
         singleLine: false,
         startIndent: 0
-    }
+    },
+    fontSize: 14  // Default font size in pixels
 };
 
 // DOM Elements
@@ -24,6 +25,8 @@ const els = {
     fieldList: document.getElementById('fieldList'),
     outputPreview: document.getElementById('outputPreview'),
     btnCopy: document.getElementById('copyBtn'),
+    btnZoomIn: document.getElementById('zoomInBtn'),
+    btnZoomOut: document.getElementById('zoomOutBtn'),
     filenameInput: document.getElementById('filenameInput'),
     exportBtns: document.querySelectorAll('.export-controls button[data-type]'),
     toast: document.getElementById('toast'),
@@ -79,6 +82,8 @@ function setupEventListeners() {
 
     // 3. Actions
     els.btnCopy.addEventListener('click', copyToClipboard);
+    els.btnZoomIn.addEventListener('click', zoomIn);
+    els.btnZoomOut.addEventListener('click', zoomOut);
 
     // Export Data Binding
     els.exportBtns.forEach(btn => {
@@ -422,6 +427,20 @@ function copyToClipboard() {
     });
 }
 
+function zoomIn() {
+    appState.fontSize = Math.min(appState.fontSize + 2, 32); // Max 32px
+    updateFontSize();
+}
+
+function zoomOut() {
+    appState.fontSize = Math.max(appState.fontSize - 2, 8); // Min 8px
+    updateFontSize();
+}
+
+function updateFontSize() {
+    els.outputPreview.style.fontSize = appState.fontSize + 'px';
+}
+
 function showToast(msg) {
     els.toast.textContent = msg;
     els.toast.classList.remove('hidden');
@@ -469,13 +488,16 @@ init();
 function setupMappingUI() {
     // Populate select
     els.mappingSelect = document.getElementById('mappingFieldSelect');
-    els.mappingFrom = document.getElementById('mappingFrom');
+    els.mappingFromSelect = document.getElementById('mappingFromSelect');
     els.mappingTo = document.getElementById('mappingTo');
     els.mappingRemove = document.getElementById('mappingRemove');
     els.addMappingBtn = document.getElementById('addMappingBtn');
     els.mappingList = document.getElementById('mappingList');
 
     els.addMappingBtn.addEventListener('click', addMappingRule);
+
+    // When field changes, populate value dropdown
+    els.mappingSelect.addEventListener('change', updateMappingValueSelect);
 
     // Toggle "To" input when Remove is checked
     els.mappingRemove.addEventListener('change', (e) => {
@@ -496,7 +518,7 @@ function updateMappingSelect() {
     // Save current selection if possible
     const currentVal = els.mappingSelect.value;
 
-    els.mappingSelect.innerHTML = '';
+    els.mappingSelect.innerHTML = '<option value="">필드를 선택하세요</option>';
     appState.fields.forEach(field => {
         const opt = document.createElement('option');
         opt.value = field;
@@ -508,15 +530,44 @@ function updateMappingSelect() {
     if (appState.fields.includes(currentVal)) {
         els.mappingSelect.value = currentVal;
     }
+
+    // Update value dropdown if field is selected
+    if (els.mappingSelect.value) {
+        updateMappingValueSelect();
+    }
+}
+
+function updateMappingValueSelect() {
+    const selectedField = els.mappingSelect.value;
+    if (!selectedField || !els.mappingFromSelect) return;
+
+    // Get unique values for this field
+    const uniqueValues = new Set();
+    appState.originalData.forEach(item => {
+        const val = item[selectedField];
+        if (val !== undefined && val !== null && val !== '') {
+            uniqueValues.add(String(val));
+        }
+    });
+
+    // Populate dropdown
+    els.mappingFromSelect.innerHTML = '<option value="">값을 선택하세요</option>';
+    Array.from(uniqueValues).sort().forEach(value => {
+        const opt = document.createElement('option');
+        opt.value = value;
+        opt.textContent = value;
+        els.mappingFromSelect.appendChild(opt);
+    });
 }
 
 function addMappingRule() {
     const field = els.mappingSelect.value;
-    const fromVal = els.mappingFrom.value.trim();
-    const toVal = els.mappingTo.value.trim();
+    const fromVal = els.mappingFromSelect.value.trim();
+    const isRemove = els.mappingRemove.checked;
+    const toVal = isRemove ? null : els.mappingTo.value.trim();
 
     if (!field || !fromVal) {
-        showToast('필드와 현재 값을 입력해주세요.');
+        showToast('필드와 현재 값을 선택해주세요.');
         return;
     }
 
@@ -529,11 +580,19 @@ function addMappingRule() {
 
     if (!appState.mappings) appState.mappings = [];
 
-    appState.mappings.push({ field, from: fromVal, to: toVal });
+    appState.mappings.push({
+        field,
+        from: fromVal,
+        to: toVal,
+        type: isRemove ? 'remove' : 'replace'
+    });
 
     // Clear inputs
-    els.mappingFrom.value = '';
+    els.mappingFromSelect.value = '';
     els.mappingTo.value = '';
+    els.mappingRemove.checked = false;
+    els.mappingTo.disabled = false;
+    els.mappingTo.placeholder = "새 값 (예: 도시)";
 
     renderMappingList();
     updatePreview();

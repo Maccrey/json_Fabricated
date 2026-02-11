@@ -148,6 +148,13 @@ body {
     font-weight: 600;
 }
 
+.panel-header .actions {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    align-items: center;
+}
+
 /* Section Input */
 .drop-zone {
     flex: 1;

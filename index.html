@@ -25,7 +25,37 @@
             <section class="glass-panel input-panel">
                 <div class="panel-header">
                     <h2>Input Data</h2>
-                    <span class="status-indicator" id="inputStatus">Waiting...</span>
+                    <div class="status-actions">
+                        <span class="status-indicator" id="inputStatus">Waiting...</span>
+                        <div class="actions">
+                            <button id="inputZoomOutBtn" class="glass-btn icon-btn" title="텍스트 축소">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="8" y1="11" x2="14" y2="11"></line>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                            </button>
+                            <button id="inputZoomInBtn" class="glass-btn icon-btn" title="텍스트 확대">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="11" y1="8" x2="11" y2="14"></line>
+                                    <line x1="8" y1="11" x2="14" y2="11"></line>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                            </button>
+                            <button id="clearInputBtn" class="glass-btn icon-btn" title="데이터 지우기">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path
+                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                    </path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div class="drop-zone" id="dropZone">
                     <div class="drop-message">
@@ -37,7 +67,45 @@
                         </svg>
                         <p>JSON 파일을 드래그하거나<br>직접 붙여넣으세요</p>
                     </div>
+                    <div id="highlightOverlay" class="highlight-overlay"></div>
                     <textarea id="jsonInput" placeholder='[ {"name": "Example", "value": 123}, ... ]'></textarea>
+                </div>
+
+                <!-- Table View Toggle -->
+                <div class="view-toggle">
+                    <button id="toggleTableViewBtn" class="glass-btn">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                        </svg>
+                        표 형식 보기
+                    </button>
+                    <button id="toggleColorCodingBtn" class="glass-btn">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M12 2a10 10 0 0 1 0 20"></path>
+                        </svg>
+                        색 구분
+                    </button>
+                    <button id="openFullEditorBtn" class="glass-btn">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        전체 편집
+                    </button>
+                </div>
+
+                <!-- Table View Container (hidden by default) -->
+                <div id="tableViewContainer" class="table-view-container hidden">
+                    <div class="table-wrapper">
+                        <table id="dataTable" class="data-table"></table>
+                    </div>
                 </div>
             </section>
 
@@ -153,6 +221,45 @@
         </main>
     </div>
 
+    <!-- Full Screen Table Editor Modal -->
+    <div id="fullEditorModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>전체 데이터 편집</h2>
+                <button id="closeModalBtn" class="glass-btn icon-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="table-controls">
+                    <button id="addColumnBtn" class="glass-btn">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        열 추가
+                    </button>
+                    <button id="addRowBtn" class="glass-btn">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        행 추가
+                    </button>
+                </div>
+                <div class="modal-table-wrapper">
+                    <table id="modalDataTable" class="data-table modal-table"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
     <div id="toast" class="toast hidden">클립보드에 복사되었습니다.</div>
 
     <script src="script.js"></script>

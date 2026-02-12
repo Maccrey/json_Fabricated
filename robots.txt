@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://json.maccrey.com/sitemap.xml

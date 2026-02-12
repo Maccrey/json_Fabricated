@@ -152,6 +152,7 @@ body {
     flex-direction: column;
     /*  overflow: hidden removed to fix dropdown clipping */
     transition: transform 0.3s;
+    min-width: 0;
 }
 
 .panel-header {
@@ -200,6 +201,7 @@ body {
     color: var(--text-secondary);
     pointer-events: none;
     transition: opacity 0.2s;
+    z-index: 1; /* Below textarea (which is 2) */
 }
 
 #jsonInput {

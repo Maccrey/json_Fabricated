@@ -439,7 +439,9 @@ function generateOutput(format = 'txt') {
         const indent = ' '.repeat(appState.options.startIndent);
         return processed.map(item => {
             // Filter out nulls
-            const values = Object.values(item).filter(v => v !== null && v !== "");
+            const values = appState.selectedFields
+                .map(key => item[key]) // Always follow selectedFields order
+                .filter(v => v !== null && v !== "");
             return indent + values.join(separator);
         }).join('\n');
     }

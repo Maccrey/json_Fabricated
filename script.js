@@ -12,7 +12,8 @@ let appState = {
     options: {
         useTab: true,
         singleLine: false,
-        startIndent: 0
+        startIndent: 0,
+        fieldSpacing: 1
     },
     fontSize: 14,  // Default font size in pixels (output)
     inputFontSize: 14,  // Default font size for input
@@ -41,6 +42,7 @@ const els = {
     optUseTab: document.getElementById('useTab'),
     optSingleLine: document.getElementById('singleLine'),
     optStartIndent: document.getElementById('startIndent'),
+    optFieldSpacing: document.getElementById('fieldSpacing'),
     mappingRemove: null, // Will be init in setupMappingUI
     toggleTableViewBtn: document.getElementById('toggleTableViewBtn'),
     toggleColorCodingBtn: document.getElementById('toggleColorCodingBtn'),
@@ -95,6 +97,12 @@ function setupEventListeners() {
     });
     els.optSingleLine.addEventListener('change', (e) => {
         appState.options.singleLine = e.target.checked;
+        updatePreview();
+    });
+    els.optFieldSpacing.addEventListener('input', (e) => {
+        let val = parseInt(e.target.value, 10);
+        if (isNaN(val) || val < 0) val = 0;
+        appState.options.fieldSpacing = val;
         updatePreview();
     });
 
@@ -419,7 +427,8 @@ function generateOutput(format = 'txt') {
     }
     else {
         // TXT (Custom)
-        const separator = appState.options.useTab ? '\t' : ' ';
+        // If tab is used, ignore field spacing option.
+        const separator = appState.options.useTab ? '\t' : ' '.repeat(appState.options.fieldSpacing);
 
         if (appState.options.singleLine) {
             // All props in one line? No, requirement says:
@@ -1156,7 +1165,7 @@ function updateMappingValueSelect() {
     const uniqueValues = new Set();
     appState.originalData.forEach(item => {
         const val = item[selectedField];
-        if (val !== undefined && val !== null && val !== '') {
+        if (val !== undefined) { // Allow null and empty string, just not undefined (missing)
             uniqueValues.add(String(val));
         }
     });

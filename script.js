@@ -791,6 +791,15 @@ function syncDataToInput() {
     }
 }
 
+function showStatus(msg, isSuccess) {
+    els.inputStatus.textContent = msg;
+    if (!isSuccess) {
+        els.inputStatus.style.color = '#ff4d4d'; // Simple error color
+    } else {
+        els.inputStatus.style.color = ''; // Reset
+    }
+}
+
 function showToast(msg) {
     els.toast.textContent = msg;
     els.toast.classList.remove('hidden');

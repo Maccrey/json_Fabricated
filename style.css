@@ -132,7 +132,7 @@ body {
 /* Grid Layout */
 .workspace-grid {
     display: grid;
-    grid-template-columns: 1fr 280px 1fr;
+    grid-template-columns: 1fr 280px 1fr 160px;
     gap: 1.5rem;
     flex: 1;
     min-height: 0;
@@ -730,6 +730,10 @@ input:checked+.slider::before {
         grid-template-columns: 1fr;
     }
 
+    .ad-panel {
+        display: none;
+    }
+
     .app-container {
         height: auto;
     }
@@ -798,6 +802,15 @@ input:checked+.slider::before {
     font-weight: bold;
     white-space: nowrap;
 }
+
+/* Ad Panel */
+.ad-panel {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 1.5rem;
+}
+
 
 .mapping-arrow {
     color: var(--text-secondary);
